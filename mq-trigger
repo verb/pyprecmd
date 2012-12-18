@@ -31,20 +31,26 @@ VERSION='0.1'
 def parse_arguments():
     "Parse arguments from command line invocation"
     parser = argparse.ArgumentParser(prog=PROG, description=__doc__)
+    # Positional Arguments
     parser.add_argument('command', help="command to run when triggered")
+
+    # Standard CLI Options
     parser.add_argument('-d', '--debug', action='store_const',
                         const=logging.DEBUG, dest='loglevel',
                         help="Enable debug messages")
-    parser.add_argument('--exchange', default='amq.topic',
-                        help="Exchange to bind, default: amq.topic")
-    parser.add_argument('--key', default='#',
-                        help="Routing key for MQ topic, default: #")
-    parser.add_argument('--server', default='localhost',
-                        help="MQ server to connect")
     parser.add_argument('-v', '--verbose', action='store_const',
                         const=logging.INFO, dest='loglevel',
                         help="Enable verbose logging")
     parser.add_argument('-V', '--version', action='version', version=VERSION)
+
+    # Connection Options
+    amqp_g = parser.add_argument_group('AMQP Options')
+    amqp_g.add_argument('--exchange', default='amq.topic',
+                        help="Exchange to bind, default: amq.topic")
+    amqp_g.add_argument('--key', default='#',
+                        help="Routing key for MQ topic, default: #")
+    amqp_g.add_argument('--server', default='localhost',
+                        help="MQ server to connect, default: localhost")
     return parser.parse_args()
 
 def run_command(msg):
