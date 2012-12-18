@@ -77,8 +77,11 @@ def main():
                 ch.queue_bind(ch_q, args.exchange, routing_key=args.key)
                 ch.basic_consume(callback=run_command)
                 logging.debug("Descending into infinite loop of infinity")
-                while True:
-                    ch.wait()
+                try:
+                    while True:
+                        ch.wait()
+                except KeyboardInterrupt:
+                    logging.info("Caught interrupt, exiting.")
     except Exception as e:
         if args.loglevel == logging.DEBUG:
             raise e
