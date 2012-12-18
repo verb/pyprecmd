@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+#
+# Copyright 2012 Lee Verberne <lee@blarg.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+'''Subscribe to a message queue and do something with the messages'''
+
+import argparse
+import logging
+import shlex
+import subprocess
+import sys
+
+import amqplib.client_0_8 as amqp
+
+PROG='mq-trigger'
+VERSION='0.1'
+
+def parse_arguments():
+    "Parse arguments from command line invocation"
+    parser = argparse.ArgumentParser(prog=PROG, description=__doc__)
+    parser.add_argument('command', help="command to run when triggered")
+    parser.add_argument('-d', '--debug', action='store_const',
+                        const=logging.DEBUG, dest='loglevel',
+                        help="Enable debug messages")
+    parser.add_argument('--exchange', default='amq.topic',
+                        help="Exchange to bind, default: amq.topic")
+    parser.add_argument('--key', default='#',
+                        help="Routing key for MQ topic, default: #")
+    parser.add_argument('--server', default='localhost',
+                        help="MQ server to connect")
+    parser.add_argument('-v', '--verbose', action='store_const',
+                        const=logging.INFO, dest='loglevel',
+                        help="Enable verbose logging")
+    parser.add_argument('-V', '--version', action='version', version=VERSION)
+    return parser.parse_args()
+
+def run_command(msg):
+    "Runs a command for the given message"
+    logging.debug("Received message %s", msg.delivery_info)
+    logging.info("Running command %s", args.command)
+    try:
+        subprocess.check_output(shlex.split(args.command))
+    except subprocess.CalledProcessError:
+        # TODO: something...
+        raise
+
+def main():
+    global args
+    args = parse_arguments()
+    if args.loglevel:
+        logging.getLogger().setLevel(args.loglevel)
+        logging.debug("%s version %s", PROG, VERSION)
+
+    try:
+        with amqp.Connection(args.server) as conn:
+            with conn.channel() as ch:
+                ch_q, _, _ = ch.queue_declare()
+                ch.queue_bind(ch_q, args.exchange, routing_key=args.key)
+                ch.basic_consume(callback=run_command)
+                logging.debug("Descending into infinite loop of infinity")
+                while True:
+                    ch.wait()
+    except Exception as e:
+        if args.loglevel == logging.DEBUG:
+            raise e
+        else:
+            print('Error:', e, file=sys.stderr)
+
+if __name__ == "__main__":
+    main()
