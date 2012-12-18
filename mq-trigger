@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 # Copyright 2012 Lee Verberne <lee@blarg.org>
 #
@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 '''Subscribe to a message queue and do something with the messages'''
+
+from __future__ import print_function
 
 import argparse
 import logging
