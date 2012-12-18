@@ -19,6 +19,7 @@
 
 import argparse
 import logging
+import os
 import shlex
 import subprocess
 import sys
@@ -30,7 +31,12 @@ VERSION='0.1'
 
 def parse_arguments():
     "Parse arguments from command line invocation"
-    parser = argparse.ArgumentParser(prog=PROG, description=__doc__)
+    pw_warn = '''Passwords specified via command line options will be visible
+              from process lists such as those produced by ps(1).  One can
+              avoid this by setting a password in the MQ_PASSWORD environment
+              variable instead.'''
+    parser = argparse.ArgumentParser(prog=PROG, description=__doc__,
+                                     epilog=pw_warn)
     # Positional Arguments
     parser.add_argument('command', help="command to run when triggered")
 
@@ -46,12 +52,23 @@ def parse_arguments():
     # Connection Options
     amqp_g = parser.add_argument_group('AMQP Options')
     amqp_g.add_argument('--exchange', default='amq.topic',
-                        help="Exchange to bind, default: amq.topic")
+                        help="Exchange to bind (default: amq.topic)")
     amqp_g.add_argument('--key', default='#',
-                        help="Routing key for MQ topic, default: #")
+                        help="Routing key for MQ topic (default: #)")
+    amqp_g.add_argument('--password', default='guest',
+                        help="MQ server password (default: guest)")
     amqp_g.add_argument('--server', default='localhost',
-                        help="MQ server to connect, default: localhost")
-    return parser.parse_args()
+                        help="MQ server to connect (default: localhost)")
+    amqp_g.add_argument('--userid', default='guest',
+                        help="MQ server userid (default: guest)")
+    amqp_g.add_argument('--vhost', default='/',
+                        help="MQ server virtual host (default: /)")
+
+    args = parser.parse_args()
+    if 'MQ_PASSWORD' in os.environ:
+        args.password = os.environ['MQ_PASSWORD']
+
+    return args
 
 def run_command(msg):
     "Runs a command for the given message"
@@ -71,7 +88,10 @@ def main():
         logging.debug("%s version %s", PROG, VERSION)
 
     try:
-        with amqp.Connection(args.server) as conn:
+        with amqp.Connection(args.server,
+                             password=args.password,
+                             userid=args.userid,
+                             virtual_host=args.vhost) as conn:
             with conn.channel() as ch:
                 ch_q, _, _ = ch.queue_declare()
                 ch.queue_bind(ch_q, args.exchange, routing_key=args.key)
