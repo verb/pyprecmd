@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2012 Lee Verberne <lee@blarg.org>
+# Copyright 2012-2013 Lee Verberne <lee@blarg.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,10 +20,10 @@ from distutils.core import setup
 
 VERSION = '0.1'
 
-setup(name='mq-trigger',
+setup(name='pyprecmd',
       author='Lee Verberne',
       author_email='lee@blarg.org',
-      description='Listen on a queue for a message, then run a command.',
+      description='Utilities that change the way commands are run.',
       license='GPLv3',
       scripts=['mq-trigger'],
       version=VERSION
