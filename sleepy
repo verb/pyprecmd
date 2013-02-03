@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+#
+# Copyright 2013 Lee Verberne <lee@blarg.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+'''Run a command after taking a nap.  Rinse & repeat.'''
+
+from __future__ import print_function
+
+import argparse
+import logging
+import os
+import random
+import subprocess
+import sys
+import time
+
+from pyprecmd import VERSION
+
+PROG='sleepy'
+
+def parse_arguments():
+    "Parse arguments from command line invocation"
+    parser = argparse.ArgumentParser(prog=PROG, description=__doc__)
+    # Positional Arguments
+    parser.add_argument('command', help="command to run upon wake")
+    parser.add_argument('args', nargs=argparse.REMAINDER,
+                        help="arguments for command")
+
+    # Standard CLI Options
+    parser.add_argument('-d', '--debug', action='store_const',
+                        const=logging.DEBUG, dest='loglevel',
+                        help="Enable debug messages")
+    parser.add_argument('-v', '--verbose', action='store_const',
+                        const=logging.INFO, dest='loglevel',
+                        help="Enable verbose logging")
+    parser.add_argument('-V', '--version', action='version', version=VERSION)
+
+    # Sleep Options
+    sleep_g = parser.add_argument_group('Sleep Options')
+    sleep_g.add_argument('--time', default=3600, type=int, metavar='SEC',
+                         help="Seconds to sleep (default: 3600)")
+    sleep_g.add_argument('--splay', default=0, type=int, metavar='MAX',
+                        help="Add 0 to MAX seconds to sleep (default: 0)")
+
+    # Repetition Options
+    rep_g = parser.add_argument_group('Repetition Options')
+    rep_g.add_argument('--count', default=0, type=int, 
+                        help="Number of times to repeat. (default: unlimited)")
+
+    args = parser.parse_args()
+    return args
+
+def run_command(cmd_list):
+    "Runs a command with argv `cmd_list`"
+    logging.info("Running command {}".format(' '.join(cmd_list)))
+    try:
+        subprocess.check_call(cmd_list)
+    except subprocess.CalledProcessError:
+        # TODO: something...
+        raise
+
+def main():
+    global args
+    args = parse_arguments()
+    if args.loglevel:
+        logging.getLogger().setLevel(args.loglevel)
+        logging.debug("{} version {}".format(PROG, VERSION))
+        logging.debug("cmd is {}".format(args.command))
+        logging.debug("args is {}".format(args.args))
+
+    try:
+        runs = 0
+        sleepytime = args.time
+        while args.count <= 0 or runs < args.count:
+            runs += 1
+            if args.splay >= 0:
+                sleepytime = args.time + random.randint(0, args.splay) 
+            logging.debug("Dispatch loop, run: {}, sleep: {}"\
+                          .format(runs, sleepytime))
+            time.sleep(sleepytime)
+            run_command([args.command] + args.args)
+    except (KeyboardInterrupt, StopIteration) as e:
+        logging.debug("Received exception {}, exiting".format(repr(e)))
+    except Exception as e:
+        if args.loglevel == logging.DEBUG:
+            raise e
+        else:
+            print('Error:', e, file=sys.stderr)
+
+if __name__ == "__main__":
+    main()
