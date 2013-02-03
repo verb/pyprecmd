@@ -18,13 +18,14 @@
 
 from distutils.core import setup
 
-VERSION = '0.1'
+from pyprecmd import VERSION
 
 setup(name='pyprecmd',
       author='Lee Verberne',
       author_email='lee@blarg.org',
       description='Utilities that change the way commands are run.',
       license='GPLv3',
-      scripts=['mq-trigger'],
+      py_modules=['pyprecmd'],
+      scripts=['mq-trigger','sleepy'],
       version=VERSION
      )
