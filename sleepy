@@ -65,7 +65,7 @@ def parse_arguments():
 
 def run_command(cmd_list):
     "Runs a command with argv `cmd_list`"
-    logging.info("Running command {}".format(' '.join(cmd_list)))
+    logging.info("Running command {0}".format(' '.join(cmd_list)))
     try:
         subprocess.check_call(cmd_list)
     except subprocess.CalledProcessError:
@@ -77,9 +77,9 @@ def main():
     args = parse_arguments()
     if args.loglevel:
         logging.getLogger().setLevel(args.loglevel)
-        logging.debug("{} version {}".format(PROG, VERSION))
-        logging.debug("cmd is {}".format(args.command))
-        logging.debug("args is {}".format(args.args))
+        logging.debug("{0} version {1}".format(PROG, VERSION))
+        logging.debug("cmd is {0}".format(args.command))
+        logging.debug("args is {0}".format(args.args))
 
     try:
         runs = 0
@@ -88,12 +88,12 @@ def main():
             runs += 1
             if args.splay >= 0:
                 sleepytime = args.time + random.randint(0, args.splay) 
-            logging.debug("Dispatch loop, run: {}, sleep: {}"\
+            logging.debug("Dispatch loop, run: {0}, sleep: {1}"\
                           .format(runs, sleepytime))
             time.sleep(sleepytime)
             run_command([args.command] + args.args)
     except (KeyboardInterrupt, StopIteration) as e:
-        logging.debug("Received exception {}, exiting".format(repr(e)))
+        logging.debug("Received exception {0}, exiting".format(repr(e)))
     except Exception as e:
         if args.loglevel == logging.DEBUG:
             raise e
