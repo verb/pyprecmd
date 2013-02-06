@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2012 Lee Verberne <lee@blarg.org>
+# Copyright 2012-2013 Lee Verberne <lee@blarg.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,8 +28,11 @@ import sys
 
 import amqplib.client_0_8 as amqp
 
-PROG='mq-trigger'
-VERSION='0.1'
+PROG='trigger'
+try:
+    from pyprecmd import VERSION
+except ImportError:
+    VERSION = "(unknown)"
 
 def parse_arguments():
     "Parse arguments from command line invocation"

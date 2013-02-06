@@ -3,7 +3,10 @@ Python Precommand Modifiers
 
 A collection of python utilities that change the way commands are run.
 
-mq-trigger
+choose
+    Given a list of commands, choose one and run it.
+
+trigger
     Listen on a queue for a message, then run a command.
 
 sleepy
