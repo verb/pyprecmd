@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-'''Choose between multiple commands at random'''
+'''Choose between multiple commands at random.
+
+Commands are strings that will be passed through a shell interpreter.
+'''
 
 from __future__ import print_function
 
@@ -33,10 +36,15 @@ except ImportError:
     VERSION = "(unknown)"
 
 PROG='choose'
+PROG_help='''
+WEIGHTS is not a ratio.  The chance of a given weight W(n) being chosen should
+be W(n) in sum(WEIGHTS).
+'''
 
 def parse_arguments():
     "Parse arguments from command line invocation"
-    parser = argparse.ArgumentParser(prog=PROG, description=__doc__)
+    parser = argparse.ArgumentParser(prog=PROG, description=__doc__,
+                                     epilog=PROG_help)
     # Positional Arguments
     parser.add_argument('commands', nargs='+', metavar='command',
                         help="list of command strings from which to choose")
@@ -52,8 +60,10 @@ def parse_arguments():
 
     # Choice Options
     choice_g = parser.add_argument_group('Choice Options')
-    choice_g.add_argument('--weights', 
-                         help="Weighting to apply to choices")
+    choice_g.add_argument('--weights', help='''
+        Weighting for the random choice function.  If given, WEIGHTS must be a
+        colon delimited list equal in length to the number of commands specified
+        ''')
 
     args = parser.parse_args()
     return args
