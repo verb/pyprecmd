@@ -26,6 +26,6 @@ setup(name='pyprecmd',
       description='Utilities that change the way commands are run.',
       license='GPLv3',
       py_modules=['pyprecmd'],
-      scripts=['mq-trigger','sleepy'],
+      scripts=['choose', 'sleepy', 'trigger'],
       version=VERSION
      )
