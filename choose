@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+#
+# Copyright 2013 Lee Verberne <lee@blarg.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+'''Choose between multiple commands at random'''
+
+from __future__ import print_function
+
+import argparse
+import logging
+import os
+import random
+import subprocess
+import sys
+import time
+
+try:
+    from pyprecmd import VERSION
+except ImportError:
+    VERSION = "(unknown)"
+
+PROG='choose'
+
+def parse_arguments():
+    "Parse arguments from command line invocation"
+    parser = argparse.ArgumentParser(prog=PROG, description=__doc__)
+    # Positional Arguments
+    parser.add_argument('commands', nargs='+', metavar='command',
+                        help="list of command strings from which to choose")
+
+    # Standard CLI Options
+    parser.add_argument('-d', '--debug', action='store_const',
+                        const=logging.DEBUG, dest='loglevel',
+                        help="Enable debug messages")
+    parser.add_argument('-v', '--verbose', action='store_const',
+                        const=logging.INFO, dest='loglevel',
+                        help="Enable verbose logging")
+    parser.add_argument('-V', '--version', action='version', version=VERSION)
+
+    # Choice Options
+    choice_g = parser.add_argument_group('Choice Options')
+    choice_g.add_argument('--weights', 
+                         help="Weighting to apply to choices")
+
+    args = parser.parse_args()
+    return args
+
+def main():
+    args = parse_arguments()
+    if args.loglevel:
+        logging.getLogger().setLevel(args.loglevel)
+        logging.debug("{0} version {1}".format(PROG, VERSION))
+        logging.debug("commands are {0}".format(args.commands))
+
+    try:
+        choices = []
+        if args.weights:
+            weights = args.weights.split(':')
+            if len(weights) != len(args.commands):
+                raise Exception("Number of weights must match number of "
+                                "commands!")
+            for command, weight in zip(args.commands, weights):
+                choices.extend((command,) * int(weight))
+        else:
+            choices = args.commands
+        logging.debug("choices are {0}".format(choices))
+
+        if choices:
+            cmdstr = random.choice(choices)
+            logging.info("Running command: {0}".format(cmdstr))
+            subprocess.call(cmdstr, shell=True)
+        else:
+            raise Exception("No Choices!")
+    except Exception as e:
+        if args.loglevel == logging.DEBUG:
+            raise e
+        else:
+            print('Error:', e, file=sys.stderr)
+
+if __name__ == "__main__":
+    main()
