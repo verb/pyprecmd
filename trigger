@@ -109,7 +109,7 @@ def main():
                     logging.info("Caught interrupt, exiting.")
     except Exception as e:
         if args.loglevel == logging.DEBUG:
-            raise e
+            raise
         else:
             print('Error:', e, file=sys.stderr)
 
