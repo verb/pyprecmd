@@ -17,4 +17,4 @@
 #
 '''Methods common to all pyprecmd scripts'''
 
-VERSION='0.7'
+VERSION='0.8'
