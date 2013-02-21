@@ -36,10 +36,7 @@ except ImportError:
     VERSION = "(unknown)"
 
 PROG='choose'
-PROG_help='''
-WEIGHTS is not a ratio.  The chance of a given weight W(n) being chosen should
-be W(n) in sum(WEIGHTS).
-'''
+PROG_help=""
 
 def parse_arguments():
     "Parse arguments from command line invocation"
