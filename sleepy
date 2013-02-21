@@ -59,6 +59,8 @@ def parse_arguments():
     rep_g = parser.add_argument_group('Repetition Options')
     rep_g.add_argument('--count', default=0, type=int, 
                         help="Number of times to repeat. (default: unlimited)")
+    rep_g.add_argument('--ignore-errors', action='store_true',
+                        help="Ignore error exit status from command")
 
     args = parser.parse_args()
     return args
@@ -68,9 +70,10 @@ def run_command(cmd_list):
     logging.info("Running command {0}".format(' '.join(cmd_list)))
     try:
         subprocess.check_call(cmd_list)
-    except subprocess.CalledProcessError:
-        # TODO: something...
-        raise
+    except subprocess.CalledProcessError as e:
+        logging.info("Command exited with status %d", e.returncode)
+        if not args.ignore_errors:
+            raise
 
 def main():
     global args
