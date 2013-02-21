@@ -111,7 +111,7 @@ def main():
         if args.loglevel == logging.DEBUG:
             raise
         else:
-            print('Error:', e, file=sys.stderr)
+            sys.exit('Error: {0}'.format(e))
 
 if __name__ == "__main__":
     main()
